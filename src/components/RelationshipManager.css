@@ -1,0 +1,325 @@
+.relationship-manager-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.relationship-manager {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: auto;
+}
+
+.rm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.rm-header h2 {
+  color: #333;
+  margin: 0;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-close:hover {
+  color: #333;
+  background: #f0f0f0;
+}
+
+.relationships-list {
+  margin-bottom: 20px;
+}
+
+.relationships-list h3 {
+  color: #555;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.relationships-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.relationship-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.rel-info {
+  color: #333;
+  font-size: 14px;
+}
+
+.rel-info strong {
+  color: #0066cc;
+}
+
+.btn-remove {
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-remove:hover {
+  background-color: #ff5252;
+}
+
+.empty-state {
+  color: #999;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.add-relationship-form {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.add-relationship-form .form-group {
+  margin-bottom: 12px;
+}
+
+.add-relationship-form label {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.add-relationship-form input,
+.add-relationship-form select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.add-relationship-form input:focus,
+.add-relationship-form select:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.form-actions button {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #0066cc;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0052a3;
+}
+
+.btn-secondary {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background-color: #d0d0d0;
+}
+
+.btn-add-relationship {
+  width: 100%;
+  padding: 10px 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-add-relationship:hover {
+  background-color: #218838;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .relationship-manager {
+    padding: 20px;
+    max-width: 100%;
+  }
+
+  .rm-header h2 {
+    font-size: 18px;
+  }
+
+  .btn-close {
+    font-size: 20px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .relationships-list h3 {
+    font-size: 13px;
+  }
+
+  .relationship-item {
+    padding: 8px 10px;
+    margin-bottom: 6px;
+  }
+
+  .rel-info {
+    font-size: 13px;
+  }
+
+  .btn-remove {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 8px 10px;
+    font-size: 16px;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-add-relationship {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .relationship-manager-overlay {
+    padding: 10px;
+  }
+
+  .relationship-manager {
+    padding: 15px;
+    max-height: 95vh;
+  }
+
+  .rm-header h2 {
+    font-size: 16px;
+  }
+
+  .btn-close {
+    font-size: 20px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .relationships-list h3 {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .relationship-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px;
+    margin-bottom: 6px;
+  }
+
+  .rel-info {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  .btn-remove {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 12px;
+    margin-top: 6px;
+  }
+
+  .form-group {
+    margin-bottom: 10px;
+  }
+
+  .form-group label {
+    font-size: 12px;
+    margin-bottom: 3px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 7px 8px;
+    font-size: 16px;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-add-relationship {
+    padding: 10px;
+    font-size: 12px;
+    width: 100%;
+  }
+}

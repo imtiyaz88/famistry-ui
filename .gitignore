@@ -1,0 +1,7 @@
+#ignore all the generated files for the npm projects
+node_modules/
+dist/
+build/
+.env
+.env.local
+.DS_Store
