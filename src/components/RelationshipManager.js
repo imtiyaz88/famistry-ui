@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './RelationshipManager.css';
 
-const RELATIONSHIP_TYPES = ['parent', 'father', 'mother', 'partner'];
+const RELATIONSHIP_TYPES = ['father', 'mother', 'partner', 'parent'];
 
 function RelationshipManager({ personId, person, allPeople, onAdd, onRemove, onClose }) {
   const [showForm, setShowForm] = useState(false);

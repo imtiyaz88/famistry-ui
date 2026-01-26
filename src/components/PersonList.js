@@ -154,6 +154,13 @@ function PersonList() {
                       </div>
                     )}
 
+                    {person.comment && (
+                      <div className="person-detail">
+                        <span className="label">Comment:</span>
+                        <span className="value">{person.comment}</span>
+                      </div>
+                    )}
+
                     {person.birthDate && (
                       <div className="person-detail">
                         <span className="label">Birth Date:</span>

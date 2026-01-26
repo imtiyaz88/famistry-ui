@@ -5,6 +5,7 @@ function PersonForm({ person, onSave, onCancel, allPeople }) {
   const [formData, setFormData] = useState(
     person || {
       name: '',
+      comment: '',
       gender: 'male',
       birthDate: '',
       fatherId: '',
@@ -67,6 +68,16 @@ function PersonForm({ person, onSave, onCancel, allPeople }) {
             value={formData.name}
             onChange={handleChange}
             required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Comment</label>
+          <input
+            type="text"
+            name="comment"
+            value={formData.comment || ''}
+            onChange={handleChange}
           />
         </div>
 
