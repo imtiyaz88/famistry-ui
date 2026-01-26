@@ -861,3 +861,258 @@ const getBirthYearFromNodeData = (node) => {
   }
   return null;
 };
+
+// Build focused family tree for a specific person
+export const buildFocusedFamilyTree = (people, selectedPersonId) => {
+  if (!Array.isArray(people) || people.length === 0 || !selectedPersonId) {
+    return { nodes: [], edges: [] };
+  }
+
+  const personMap = new Map(people.map(p => [p.id, p]));
+  const selectedPerson = personMap.get(selectedPersonId);
+  
+  if (!selectedPerson) {
+    return { nodes: [], edges: [] };
+  }
+
+  const nodes = [];
+  const edges = [];
+  const processedNodes = new Set();
+  const processedEdges = new Set();
+
+  // Layout constants
+  const NODE_WIDTH = 160;
+  const VERTICAL_SPACING = 200;
+  const HORIZONTAL_SPACING = 180;
+  const START_X = 400; // Center the selected person
+  const START_Y = 300;
+
+  // Helper function to create a node
+  const createNode = (person, x, y, generationLevel, isIncludedInPreviousTree = false) => {
+    const uniqueNodeId = isIncludedInPreviousTree ? `${person.id}_focused_duplicate` : person.id;
+    
+    // Extract birth year
+    let birthYear = null;
+    if (person.birthDate) {
+      try {
+        const date = new Date(person.birthDate);
+        birthYear = date.getFullYear();
+      } catch (e) {
+        birthYear = null;
+      }
+    }
+
+    nodes.push({
+      id: uniqueNodeId,
+      data: {
+        name: person.name || 'Unknown',
+        gender: person.gender || 'other',
+        birthYear,
+        birthDate: person.birthDate,
+        deathDate: person.deathDate,
+        imageUrl: person.imageUrl,
+        isAlive: person.alive !== false,
+        generationLevel,
+        isIncludedInPreviousTree,
+        originalId: person.id,
+      },
+      position: { x, y },
+      type: 'person',
+    });
+
+    return uniqueNodeId;
+  };
+
+  // Helper function to create an edge
+  const createEdge = (sourceId, targetId, edgeType, relationshipLabel = '') => {
+    const edgeKey = `${sourceId}-${targetId}`;
+    if (!processedEdges.has(edgeKey)) {
+      edges.push({
+        id: edgeKey,
+        source: sourceId,
+        target: targetId,
+        sourceHandle: edgeType === 'parent-child' ? 'bottom' : 'right',
+        targetHandle: edgeType === 'parent-child' ? 'top' : 'left',
+        type: 'smoothstep',
+        pathOptions: {
+          offset: 20,
+          borderRadius: 10,
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 12,
+          height: 12,
+          color: edgeType === 'spouse' ? '#ec4899' : '#3b82f6',
+        },
+        style: {
+          stroke: edgeType === 'spouse' ? '#ec4899' : '#3b82f6',
+          strokeWidth: 2,
+          strokeOpacity: 0.8,
+        },
+        label: relationshipLabel,
+        data: { [edgeType]: true },
+      });
+      processedEdges.add(edgeKey);
+    }
+  };
+
+  // 1. Create the selected person (center)
+  const selectedNodeId = createNode(selectedPerson, START_X, START_Y, 0);
+  processedNodes.add(selectedPersonId);
+
+  // 2. Get parents and parent's siblings
+  const father = selectedPerson.fatherId ? personMap.get(selectedPerson.fatherId) : null;
+  const mother = selectedPerson.motherId ? personMap.get(selectedPerson.motherId) : null;
+  const parents = [father, mother].filter(Boolean);
+
+  // 3. Get grandparents
+  const grandparents = [];
+  if (father) {
+    if (father.fatherId) grandparents.push(personMap.get(father.fatherId));
+    if (father.motherId) grandparents.push(personMap.get(father.motherId));
+  }
+  if (mother) {
+    if (mother.fatherId) grandparents.push(personMap.get(mother.fatherId));
+    if (mother.motherId) grandparents.push(personMap.get(mother.motherId));
+  }
+  const validGrandparents = grandparents.filter(Boolean);
+
+  // 4. Get parent's siblings (aunts/uncles)
+  const parentSiblings = [];
+  if (father) {
+    people.forEach(person => {
+      if (person.id !== father.id && 
+          ((person.fatherId === father.fatherId && person.motherId === father.motherId) ||
+           (person.fatherId === father.fatherId && !father.motherId) ||
+           (person.motherId === father.motherId && !father.fatherId))) {
+        parentSiblings.push(person);
+      }
+    });
+  }
+  if (mother) {
+    people.forEach(person => {
+      if (person.id !== mother.id && 
+          ((person.fatherId === mother.fatherId && person.motherId === mother.motherId) ||
+           (person.fatherId === mother.fatherId && !mother.motherId) ||
+           (person.motherId === mother.motherId && !mother.fatherId))) {
+        parentSiblings.push(person);
+      }
+    });
+  }
+
+  // 5. Get siblings
+  const siblings = [];
+  people.forEach(person => {
+    if (person.id !== selectedPersonId &&
+        ((person.fatherId === selectedPerson.fatherId && person.motherId === selectedPerson.motherId) ||
+         (person.fatherId === selectedPerson.fatherId && !selectedPerson.motherId) ||
+         (person.motherId === selectedPerson.motherId && !selectedPerson.fatherId))) {
+      siblings.push(person);
+    }
+  });
+
+  // 6. Get children
+  const children = people.filter(person => 
+    person.fatherId === selectedPersonId || person.motherId === selectedPersonId
+  );
+
+  // 7. Get grandchildren
+  const grandchildren = [];
+  children.forEach(child => {
+    people.forEach(person => {
+      if ((person.fatherId === child.id || person.motherId === child.id) && 
+          !grandchildren.find(gp => gp.id === person.id)) {
+        grandchildren.push(person);
+      }
+    });
+  });
+
+  // Position and create nodes
+
+  // Grandparents (top level)
+  const grandparentY = START_Y - 2 * VERTICAL_SPACING;
+  const grandparentStartX = START_X - (validGrandparents.length * HORIZONTAL_SPACING) / 2;
+  validGrandparents.forEach((grandparent, index) => {
+    const x = grandparentStartX + index * HORIZONTAL_SPACING;
+    createNode(grandparent, x, grandparentY, -2);
+  });
+
+  // Parents and parent's siblings (upper level)
+  const parentLevelY = START_Y - VERTICAL_SPACING;
+  const parentsAndSiblings = [...parents, ...parentSiblings];
+  const parentStartX = START_X - (parentsAndSiblings.length * HORIZONTAL_SPACING) / 2;
+  
+  parentsAndSiblings.forEach((person, index) => {
+    const x = parentStartX + index * HORIZONTAL_SPACING;
+    const nodeId = createNode(person, x, parentLevelY, -1);
+    
+    // Create parent-child edges
+    if (person === father || person === mother) {
+      createEdge(nodeId, selectedNodeId, 'parent-child');
+    }
+  });
+
+  // Create spouse edges for parents
+  if (father && mother) {
+    const fatherNode = nodes.find(n => n.data.originalId === father.id);
+    const motherNode = nodes.find(n => n.data.originalId === mother.id);
+    if (fatherNode && motherNode) {
+      createEdge(fatherNode.id, motherNode.id, 'spouse');
+    }
+  }
+
+  // Siblings (same level as selected person)
+  const siblingY = START_Y;
+  const siblingStartX = START_X + NODE_WIDTH + HORIZONTAL_SPACING;
+  siblings.forEach((sibling, index) => {
+    const x = siblingStartX + index * HORIZONTAL_SPACING;
+    createNode(sibling, x, siblingY, 0);
+  });
+
+  // Children (lower level)
+  const childrenY = START_Y + VERTICAL_SPACING;
+  const childrenStartX = START_X - (children.length * HORIZONTAL_SPACING) / 2;
+  children.forEach((child, index) => {
+    const x = childrenStartX + index * HORIZONTAL_SPACING;
+    const childNodeId = createNode(child, x, childrenY, 1);
+    createEdge(selectedNodeId, childNodeId, 'parent-child');
+  });
+
+  // Create spouse edges for children
+  children.forEach(child => {
+    if (child.spouseId) {
+      const spouse = personMap.get(child.spouseId);
+      if (spouse) {
+        const childNode = nodes.find(n => n.data.originalId === child.id);
+        if (childNode) {
+          const spouseNodeId = createNode(spouse, childNode.position.x + NODE_WIDTH, childrenY, 1);
+          createEdge(childNode.id, spouseNodeId, 'spouse');
+        }
+      }
+    }
+  });
+
+  // Grandchildren (bottom level)
+  const grandchildY = START_Y + 2 * VERTICAL_SPACING;
+  const grandchildStartX = START_X - (grandchildren.length * HORIZONTAL_SPACING) / 2;
+  grandchildren.forEach((grandchild, index) => {
+    const x = grandchildStartX + index * HORIZONTAL_SPACING;
+    createNode(grandchild, x, grandchildY, 2);
+  });
+
+  // Create parent-child edges for grandchildren
+  grandchildren.forEach(grandchild => {
+    const parent = children.find(child => 
+      grandchild.fatherId === child.id || grandchild.motherId === child.id
+    );
+    if (parent) {
+      const parentNode = nodes.find(n => n.data.originalId === parent.id);
+      const grandchildNode = nodes.find(n => n.data.originalId === grandchild.id);
+      if (parentNode && grandchildNode) {
+        createEdge(parentNode.id, grandchildNode.id, 'parent-child');
+      }
+    }
+  });
+
+  return { nodes, edges };
+};

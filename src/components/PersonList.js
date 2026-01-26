@@ -1,26 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/apiService';
-import PersonForm from './PersonForm';
 import RelationshipManager from './RelationshipManager';
 import './PersonList.css';
 
-function PersonList() {
-  const [people, setPeople] = useState([]);
+function PersonList({ openPersonForm, people, refreshPeople }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPersonForm, setShowPersonForm] = useState(false);
-  const [editingPerson, setEditingPerson] = useState(null);
   const [showRelationshipManager, setShowRelationshipManager] = useState(null);
 
-  useEffect(() => {
-    loadPeople();
-  }, []);
+  const deletePerson = async (id) => {
+    if (window.confirm('Are you sure you want to delete this person?')) {
+      try {
+        setLoading(true);
+        await apiService.deletePerson(id);
+        refreshPeople(); // Refresh people list after successful delete
+        setError('');
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
-  const loadPeople = async () => {
+  const handleAddRelationship = async (relationship) => {
     try {
       setLoading(true);
-      const data = await apiService.listPeople();
-      setPeople(data);
+      await apiService.addRelationship(showRelationshipManager, relationship);
+      refreshPeople(); // Refresh people list after successful operation
       setError('');
     } catch (err) {
       setError(err.message);
@@ -29,79 +36,30 @@ function PersonList() {
     }
   };
 
-  const handleAddPerson = async (personData) => {
-    try {
-      await apiService.createPerson(personData);
-      loadPeople();
-      setShowPersonForm(false);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleEditPerson = async (personData) => {
-    try {
-      await apiService.updatePerson(editingPerson.id, personData);
-      loadPeople();
-      setEditingPerson(null);
-      setShowPersonForm(false);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleDeletePerson = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this person?')) {
-      return;
-    }
-    try {
-      await apiService.deletePerson(id);
-      loadPeople();
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleAddRelationship = async (relationship) => {
-    try {
-      await apiService.addRelationship(showRelationshipManager, relationship);
-      loadPeople();
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
   const handleRemoveRelationship = async (targetId) => {
     try {
+      setLoading(true);
       await apiService.removeRelationship(showRelationshipManager, targetId);
-      loadPeople();
+      refreshPeople(); // Refresh people list after successful operation
+      setError('');
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const openPersonForm = (person = null) => {
-    setEditingPerson(person);
-    setShowPersonForm(true);
+  const openRelationshipManager = (personId) => {
+    setShowRelationshipManager(personId);
   };
 
-  const closePersonForm = () => {
-    setShowPersonForm(false);
-    setEditingPerson(null);
+  const closeRelationshipManager = () => {
+    setShowRelationshipManager(null);
+    refreshPeople(); // Refresh people list to show updated relationships
   };
 
   return (
     <div className="person-list-container">
-      <header className="app-header">
-        <h1>Famistry - Family Tree Manager</h1>
-        <button
-          className="btn-primary"
-          onClick={() => openPersonForm()}
-        >
-          + Add Person
-        </button>
-      </header>
-
       {error && <div className="error-message">{error}</div>}
 
       {loading ? (
@@ -133,7 +91,7 @@ function PersonList() {
                       </button>
                       <button
                         className="btn-icon delete"
-                        onClick={() => handleDeletePerson(person.id)}
+                        onClick={() => deletePerson(person.id)}
                         title="Delete"
                       >
                         ✕
@@ -216,15 +174,6 @@ function PersonList() {
             </div>
           )}
         </>
-      )}
-
-      {showPersonForm && (
-        <PersonForm
-          person={editingPerson}
-          onSave={editingPerson ? handleEditPerson : handleAddPerson}
-          onCancel={closePersonForm}
-          allPeople={people}
-        />
       )}
 
       {showRelationshipManager && (

@@ -58,7 +58,22 @@
 .nav-btn.active {
   background: white;
   color: #667eea;
-  border-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.nav-btn.add-person-btn {
+  background: #28a745;
+  border-color: #28a745;
+  color: white;
+  font-weight: bold;
+  margin-left: 15px;
+}
+
+.nav-btn.add-person-btn:hover {
+  background: #218838;
+  border-color: #1e7e34;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
 
 .back-btn {
