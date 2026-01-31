@@ -1,4 +1,5 @@
-const API_BASE = 'http://localhost:8080/api/person';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
+const API_BASE = API_BASE_URL+"/api/person";
 
 export const apiService = {
   // Person CRUD
